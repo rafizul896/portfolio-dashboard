@@ -7,17 +7,17 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { NMTable } from "@/components/core";
 import DeleteConfirmationModal from "@/components/core/DeleteConfirmationModal";
-import { TBlog } from "@/types/blog.type";
-import AddSkillModal from "./AddBlog";
-import { deleteBlog } from "@/services/blog";
-import UpdateBlogModal from "./UpdateBlog";
+import { TProject } from "@/types/project.type";
+import { deleteProject } from "@/services/project";
+import AddProjectModel from "./AddProject";
+import UpdateProjectModal from "./UpdateProject";
 
-const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
+const ManageProjects = ({ projects }: { projects: TProject[] }) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
-  const handleDelete = (data: TBlog) => {
+  const handleDelete = (data: TProject) => {
     setSelectedId(data?._id);
     setSelectedItem(data?.title);
     setModalOpen(true);
@@ -26,7 +26,7 @@ const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
   const handleDeleteConfirm = async () => {
     try {
       if (selectedId) {
-        const res = await deleteBlog(selectedId);
+        const res = await deleteProject(selectedId);
         if (res?.success) {
           toast.success(res?.message);
           setModalOpen(false);
@@ -39,10 +39,10 @@ const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
     }
   };
 
-  const columns: ColumnDef<TBlog>[] = [
+  const columns: ColumnDef<TProject>[] = [
     {
       accessorKey: "name",
-      header: "Blog Name",
+      header: "Project Name",
       cell: ({ row }) => (
         <div className="flex items-center space-x-3">
           <Image
@@ -65,17 +65,11 @@ const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
       cell: ({ row }) => <span>{row.original.category}</span>,
     },
     {
-      accessorKey: "author",
-      header: "Author",
-      cell: ({ row }) => <span>{row.original.author}</span>,
-    },
-
-    {
       accessorKey: "action",
       header: "Action",
       cell: ({ row }) => (
         <div className="flex items-center space-x-3">
-          <UpdateBlogModal blog={row.original} />
+          <UpdateProjectModal project={row.original} />
 
           <button
             className="text-gray-500 cursor-pointer hover:text-red-500"
@@ -92,12 +86,12 @@ const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Manage Blogs</h1>
+        <h1 className="text-xl font-bold">Manage Projects</h1>
         <div className="flex items-center gap-2">
-          <AddSkillModal />{" "}
+          <AddProjectModel />
         </div>
       </div>
-      <NMTable columns={columns} data={blogs || []} />
+      <NMTable columns={columns} data={projects || []} />
 
       <DeleteConfirmationModal
         name={selectedItem}
@@ -109,4 +103,4 @@ const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
   );
 };
 
-export default ManageBlogs;
+export default ManageProjects;
