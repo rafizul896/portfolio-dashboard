@@ -7,17 +7,17 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { NMTable } from "@/components/core";
 import DeleteConfirmationModal from "@/components/core/DeleteConfirmationModal";
-import { TBlog } from "@/types/blog.type";
-import { deleteBlog } from "@/services/blog";
-import UpdateBlogModal from "./UpdateBlog";
-import AddBlogModal from "./AddBlog";
+import { TExperience } from "@/types/experience.type";
+import { deleteExperience } from "@/services/experience";
+import AddExperienceModal from "./AddExperience";
+import UpdateExperienceModal from "./UpdateExperience";
 
-const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
+const ManageExperience = ({ experiences }: { experiences: TExperience[] }) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
-  const handleDelete = (data: TBlog) => {
+  const handleDelete = (data: TExperience) => {
     setSelectedId(data?._id);
     setSelectedItem(data?.title);
     setModalOpen(true);
@@ -26,7 +26,7 @@ const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
   const handleDeleteConfirm = async () => {
     try {
       if (selectedId) {
-        const res = await deleteBlog(selectedId);
+        const res = await deleteExperience(selectedId);
         if (res?.success) {
           toast.success(res?.message);
           setModalOpen(false);
@@ -39,15 +39,15 @@ const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
     }
   };
 
-  const columns: ColumnDef<TBlog>[] = [
+  const columns: ColumnDef<TExperience>[] = [
     {
       accessorKey: "name",
-      header: "Blog Name",
+      header: "Title",
       cell: ({ row }) => (
         <div className="flex items-center space-x-3">
           <Image
             src={
-              row.original.thumbnail ||
+              row.original.companyLogo ||
               "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4EBD8ObUxTnbJn_zC9CS-BbgNXkn56UvhMR9HbC-ExmbZXoLIuJy0kQQbJcjvIiKEtHs&usqp=CAU"
             }
             alt={row.original.title}
@@ -60,14 +60,14 @@ const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
       ),
     },
     {
-      accessorKey: "category",
-      header: "Category",
-      cell: ({ row }) => <span>{row.original.category}</span>,
+      accessorKey: "company",
+      header: "Company",
+      cell: ({ row }) => <span>{row.original.company}</span>,
     },
     {
-      accessorKey: "author",
-      header: "Author",
-      cell: ({ row }) => <span>{row.original.author}</span>,
+      accessorKey: "location",
+      header: "Location",
+      cell: ({ row }) => <span>{row.original.location}</span>,
     },
 
     {
@@ -75,7 +75,7 @@ const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
       header: "Action",
       cell: ({ row }) => (
         <div className="flex items-center space-x-3">
-          <UpdateBlogModal blog={row.original} />
+          <UpdateExperienceModal experience={row.original} />
 
           <button
             className="text-gray-500 cursor-pointer hover:text-red-500"
@@ -92,12 +92,12 @@ const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Manage Blogs</h1>
+        <h1 className="text-xl font-bold">Manage Experience</h1>
         <div className="flex items-center gap-2">
-          <AddBlogModal />
+          <AddExperienceModal />
         </div>
       </div>
-      <NMTable columns={columns} data={blogs || []} />
+      <NMTable columns={columns} data={experiences || []} />
 
       <DeleteConfirmationModal
         name={selectedItem}
@@ -109,4 +109,4 @@ const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
   );
 };
 
-export default ManageBlogs;
+export default ManageExperience;
