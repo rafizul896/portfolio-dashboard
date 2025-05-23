@@ -1,11 +1,15 @@
-import React from 'react';
+import ManageContacts from "@/components/modules/contact";
+import { getAllContacts } from "@/services/contact";
+import React from "react";
 
-const ContactPage = () => {
-    return (
-        <div>
-            ContactPage
-        </div>
-    );
+const ContactPage = async () => {
+  const { data } = await getAllContacts();
+
+  return (
+    <div>
+      <ManageContacts contacts={data} />
+    </div>
+  );
 };
 
 export default ContactPage;

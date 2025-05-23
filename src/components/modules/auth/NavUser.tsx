@@ -20,7 +20,6 @@ import { useRouter } from "next/navigation";
 import { getCurrentUser, logoutUser } from "@/services/auth";
 import { useEffect, useState } from "react";
 
-// ✅ Optional: Define a type for the user
 type UserType = {
   name: string;
   email: string;
@@ -58,7 +57,7 @@ const NavUser = () => {
   };
 
   return (
-    <SidebarMenu >
+    <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

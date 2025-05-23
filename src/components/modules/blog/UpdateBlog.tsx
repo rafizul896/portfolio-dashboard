@@ -88,14 +88,12 @@ export default function UpdateBlogModal({ blog }: { blog: TBlog }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <button
-            className="text-gray-500 cursor-pointer hover:text-cyan-400"
-            title="Edit"
-          >
-            <Edit className="w-5 h-5" />
-          </button>
-        </Button>
+        <button
+          className="text-gray-500 cursor-pointer hover:text-cyan-400"
+          title="Edit"
+        >
+          <Edit className="w-5 h-5" />
+        </button>
       </DialogTrigger>
 
       <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">

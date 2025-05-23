@@ -26,6 +26,10 @@ export const middleware = async (request: NextRequest) => {
     }
   }
 
+   if (userInfo && pathname === "/") {
+    return NextResponse.redirect(new URL("/admin/home", request.url));
+  }
+
   if (userInfo?.role && roleBasedPrivateRoutes[userInfo?.role as Role]) {
     const routes = roleBasedPrivateRoutes[userInfo?.role as Role];
     if (routes.some((route) => pathname.match(route))) {
@@ -37,5 +41,5 @@ export const middleware = async (request: NextRequest) => {
 };
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*","/"],
 };

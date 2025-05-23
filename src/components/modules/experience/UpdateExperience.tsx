@@ -48,8 +48,12 @@ export default function UpdateExperienceModal({
       title: experience.title || "",
       company: experience.company || "",
       location: experience.location || "",
-      from: experience.from ? new Date(experience.from).toISOString().split("T")[0] : "",
-      to: experience.to ? new Date(experience.to).toISOString().split("T")[0] : "",
+      from: experience.from
+        ? new Date(experience.from).toISOString().split("T")[0]
+        : "",
+      to: experience.to
+        ? new Date(experience.to).toISOString().split("T")[0]
+        : "",
       current: experience.current || false,
       description: experience.description || "",
     },
@@ -90,14 +94,12 @@ export default function UpdateExperienceModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <button
-            className="text-gray-500 cursor-pointer hover:text-cyan-400"
-            title="Edit"
-          >
-            <Edit className="w-5 h-5" />
-          </button>
-        </Button>
+        <button
+          className="text-gray-500 cursor-pointer hover:text-cyan-400"
+          title="Edit"
+        >
+          <Edit className="w-5 h-5" />
+        </button>
       </DialogTrigger>
 
       <DialogContent className="max-w-3xl max-h-[95vh] overflow-y-auto">

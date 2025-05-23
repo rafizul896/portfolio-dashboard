@@ -64,7 +64,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent className="bg-slate-900 text-white">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white text-xl pb-3">
+          <SidebarGroupLabel className="text-white text-xl pb-2">
             Portfolio Dashboard
           </SidebarGroupLabel>
           <SidebarGroupContent>
