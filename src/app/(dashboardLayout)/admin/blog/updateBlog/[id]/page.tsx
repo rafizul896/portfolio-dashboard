@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -54,22 +55,19 @@ import {
 
 import NMImageUploader from "@/components/core/ImageUploader";
 import ImagePreviewer from "@/components/core/ImageUploader/ImagePreviewer";
-import { addBlog } from "@/services/blog";
+import { getBlogById, updateBlog } from "@/services/blog";
 import { toast } from "sonner";
 
 // Font Size Extension
 import { Editor, Extension } from "@tiptap/core";
-import { useRouter } from "next/navigation";
+import DashboardLoading from "@/components/modules/dashboard/DashboardLoading";
 
+// FontSize extension (same as AddBlogModal)
 const FontSize = Extension.create({
   name: "fontSize",
-
   addOptions() {
-    return {
-      types: ["textStyle"],
-    };
+    return { types: ["textStyle"] };
   },
-
   addGlobalAttributes() {
     return [
       {
@@ -77,15 +75,11 @@ const FontSize = Extension.create({
         attributes: {
           fontSize: {
             default: null,
-            parseHTML: (element) =>
+            parseHTML: (element: any) =>
               element.style.fontSize.replace(/['"]+/g, ""),
-            renderHTML: (attributes) => {
-              if (!attributes.fontSize) {
-                return {};
-              }
-              return {
-                style: `font-size: ${attributes.fontSize}`,
-              };
+            renderHTML: (attributes: any) => {
+              if (!attributes.fontSize) return {};
+              return { style: `font-size: ${attributes.fontSize}` };
             },
           },
         },
@@ -94,36 +88,34 @@ const FontSize = Extension.create({
   },
 });
 
-// Custom Image Extension with alignment and sizing
+// Custom Image Extension with alignment and sizing (same as AddBlogModal)
 const CustomImage = Image.extend({
   addAttributes() {
     return {
       ...this.parent?.(),
       align: {
         default: "left",
-        parseHTML: (element) =>
+        parseHTML: (element: any) =>
           element.getAttribute("data-align") ||
           (element.style.display === "block" &&
             element.style.marginLeft === "auto")
             ? "center"
             : "left",
-        renderHTML: (attributes) => {
+        renderHTML: (attributes: any) => {
           if (attributes.align === "center") {
             return {
               "data-align": "center",
               style: "display: block; margin: 0 auto;",
             };
           }
-          return {
-            "data-align": attributes.align,
-          };
+          return { "data-align": attributes.align };
         },
       },
       width: {
         default: null,
-        parseHTML: (element) =>
+        parseHTML: (element: any) =>
           element.getAttribute("width") || element.style.width,
-        renderHTML: (attributes) => {
+        renderHTML: (attributes: any) => {
           if (!attributes.width) return {};
           return {
             width: attributes.width,
@@ -137,9 +129,9 @@ const CustomImage = Image.extend({
       },
       height: {
         default: null,
-        parseHTML: (element) =>
+        parseHTML: (element: any) =>
           element.getAttribute("height") || element.style.height,
-        renderHTML: (attributes) => {
+        renderHTML: (attributes: any) => {
           if (!attributes.height) return {};
           return {
             height: attributes.height,
@@ -166,7 +158,7 @@ const CustomImage = Image.extend({
   },
 });
 
-// Tiptap Toolbar Component
+// TiptapToolbar (same as AddBlogModal)
 const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
   const [showImageDropdown, setShowImageDropdown] = useState(false);
   const [showImageSizeModal, setShowImageSizeModal] = useState(false);
@@ -694,10 +686,13 @@ const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
   );
 };
 
-export default function AddBlogModal() {
+export default function UpdateBlogPage() {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+
   const [imageFiles, setImageFiles] = useState<File[] | []>([]);
   const [imagePreview, setImagePreview] = useState<string[] | []>([]);
-  const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
   const form = useForm({
     defaultValues: {
@@ -714,49 +709,37 @@ export default function AddBlogModal() {
     formState: { isSubmitting },
   } = form;
 
-  // Initialize Tiptap editor with all extensions
+  // Editor instance
+  const [editorInstance, setEditorInstance] = useState<Editor | null>(null);
+
+  // Editor content management
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        // Disable the default list extensions from StarterKit
         bulletList: false,
         orderedList: false,
         listItem: false,
-        codeBlock: false, // We'll add our own
+        codeBlock: false,
       }),
-      // Text styling extensions
       TextStyle,
       FontSize,
       FontFamily,
       Highlight.configure({
         multicolor: true,
-        HTMLAttributes: {
-          class: "tiptap-highlight",
-        },
+        HTMLAttributes: { class: "tiptap-highlight" },
       }),
-      // List extensions
       BulletList.configure({
-        HTMLAttributes: {
-          class: "tiptap-bullet-list",
-        },
+        HTMLAttributes: { class: "tiptap-bullet-list" },
       }),
       OrderedList.configure({
-        HTMLAttributes: {
-          class: "tiptap-ordered-list",
-        },
+        HTMLAttributes: { class: "tiptap-ordered-list" },
       }),
       ListItem.configure({
-        HTMLAttributes: {
-          class: "tiptap-list-item",
-        },
+        HTMLAttributes: { class: "tiptap-list-item" },
       }),
-      // Code block extension
       CodeBlock.configure({
-        HTMLAttributes: {
-          class: "tiptap-code-block",
-        },
+        HTMLAttributes: { class: "tiptap-code-block" },
       }),
-      // Image extension with better configuration
       CustomImage.configure({
         inline: false,
         allowBase64: true,
@@ -778,6 +761,46 @@ export default function AddBlogModal() {
     },
   });
 
+  useEffect(() => {
+    if (editor) setEditorInstance(editor);
+  }, [editor]);
+
+  // Load existing blog data
+  useEffect(() => {
+    const fetchBlog = async () => {
+      setLoading(true);
+      try {
+        const { data } = await getBlogById(id);
+        const blog = data;
+
+        form.reset({
+          title: blog.title,
+          content: blog.content,
+          author: blog.author,
+          category: blog.category,
+          tags: blog.tags ? blog.tags.join(", ") : "",
+          isPublished: blog.isPublished,
+        });
+        if (editor) {
+          editor.commands.setContent(blog.content || "");
+        }
+        // If your blog has a thumbnail, handle its preview here
+        if (blog.thumbnailUrl) {
+          setImagePreview([blog.thumbnailUrl]);
+        }
+      } catch (err) {
+        if (err instanceof Error) {
+          toast.error(err?.message || "Failed to load blog data.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlog();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, editor]);
+
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
     const formData = new FormData();
 
@@ -798,24 +821,24 @@ export default function AddBlogModal() {
     }
 
     try {
-      const res = await addBlog(formData);
+      const res = await updateBlog(id, formData);
 
+      toast.success(res.message || "Blog updated successfully!");
       router.push("/admin/blog");
-      toast.success(res.message);
-      form.reset();
-      editor?.commands.clearContent();
-      setImageFiles([]);
-      setImagePreview([]);
     } catch (err) {
       if (err instanceof Error) {
-        toast.error(err?.message);
+        toast.error(err.message);
       }
     }
   };
 
+  if (loading) {
+    return <DashboardLoading />;
+  }
+
   return (
     <div className="">
-      <h1 className="font-medium text-xl pb-5">Add New Blog</h1>
+      <h1 className="font-medium text-xl pb-5">Update Blog</h1>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-2">
@@ -884,9 +907,9 @@ export default function AddBlogModal() {
                 <FormLabel>Content</FormLabel>
                 <FormControl>
                   <div className="border border-gray-300 rounded-md overflow-hidden">
-                    <TiptapToolbar editor={editor} />
+                    <TiptapToolbar editor={editorInstance} />
                     <EditorContent
-                      editor={editor}
+                      editor={editorInstance}
                       className="prose prose-sm max-w-none p-4 min-h-[200px] focus-within:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[200px] [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md [&_img]:my-2"
                     />
                     <style jsx global>{`
@@ -992,7 +1015,7 @@ export default function AddBlogModal() {
               Thumbnail
             </p>
             <div className="flex gap-4 flex-wrap">
-              {!imageFiles.length && (
+              {!imagePreview.length && (
                 <NMImageUploader
                   setImageFiles={setImageFiles}
                   setImagePreview={setImagePreview}
@@ -1015,7 +1038,7 @@ export default function AddBlogModal() {
               disabled={isSubmitting}
               className="w-full md:w-auto"
             >
-              {isSubmitting ? "Adding Blog..." : "Add Blog"}
+              {isSubmitting ? "Updating Blog..." : "Update Blog"}
             </Button>
           </div>
         </form>

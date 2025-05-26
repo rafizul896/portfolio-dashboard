@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Trash } from "lucide-react";
+import { Edit, Trash } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -9,8 +9,7 @@ import { NMTable } from "@/components/core";
 import DeleteConfirmationModal from "@/components/core/DeleteConfirmationModal";
 import { TBlog } from "@/types/blog.type";
 import { deleteBlog } from "@/services/blog";
-import UpdateBlogModal from "./UpdateBlog";
-import AddBlogModal from "./AddBlog";
+import { Button } from "@/components/ui/button";
 
 const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -75,7 +74,12 @@ const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
       header: "Action",
       cell: ({ row }) => (
         <div className="flex items-center space-x-3">
-          <UpdateBlogModal blog={row.original} />
+          <a
+            href={`/admin/blog/updateBlog/${row.original._id}`}
+            className="text-gray-500 cursor-pointer hover:text-cyan-400"
+          >
+            <Edit className="w-5 h-5" />
+          </a>
 
           <button
             className="text-gray-500 cursor-pointer hover:text-red-500"
@@ -94,7 +98,9 @@ const ManageBlogs = ({ blogs }: { blogs: TBlog[] }) => {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Manage Blogs</h1>
         <div className="flex items-center gap-2">
-          <AddBlogModal />
+          <a href={`/admin/blog/addBlog`}>
+            <Button className="cursor-pointer">Add Blog</Button>
+          </a>
         </div>
       </div>
       <NMTable columns={columns} data={blogs || []} />
